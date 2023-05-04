@@ -1,0 +1,52 @@
+# Define the pipeline stages
+stages:
+  - name: Source
+    actions:
+      - name: SourceAction
+        actionTypeId:
+          category: Source
+          owner: AWS
+          provider: CodeCommit
+          version: 1
+        configuration:
+          RepositoryName: my-repo
+          BranchName: master
+        outputArtifacts:
+          - Name: source_code
+
+  - name: Build
+    actions:
+      - name: BuildAction
+        actionTypeId:
+          category: Build
+          owner: AWS
+          provider: CodeBuild
+          version: 1
+        configuration:
+          ProjectName: my-build-project
+        inputArtifacts:
+          - Name: source_code
+        outputArtifacts:
+          - Name: built_artifacts
+
+  - name: Deploy
+    actions:
+      - name: DeployAction
+        actionTypeId:
+          category: Deploy
+          owner: AWS
+          provider: CodeDeploy
+          version: 1
+        configuration:
+          ApplicationName: my-deploy-app
+          DeploymentGroupName: my-deploy-group
+        inputArtifacts:
+          - Name: built_artifacts
+
+# Define the pipeline settings
+artifactStore:
+  type: S3
+  location: my-bucket
+  encryptionKey:
+    id: my-key-id
+    type: KMS
